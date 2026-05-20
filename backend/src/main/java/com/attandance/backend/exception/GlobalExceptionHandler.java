@@ -17,7 +17,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
     ResponseEntity<ApiResponse<Void>> handlingRuntimeException(Exception exception) {
-        log.error("Exception: ", exception);
         ApiResponse<Void> apiResponse = new ApiResponse<>();
 
         apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
@@ -48,12 +47,13 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
-    
 
     // private String mapAttribute(String message, Map<String, Object> attributes) {
     //     String minValue = String.valueOf(attributes.get(MIN_ATTRIBUTE));
 
     //     return message.replace("{" + MIN_ATTRIBUTE + "}", minValue);
     // }
+
+    
 
 }
