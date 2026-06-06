@@ -4,12 +4,13 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.attandance.backend.config.SecurityConfig;
 import com.attandance.backend.dto.request.AuthRequest.LoginRequest;
 import com.attandance.backend.dto.request.AuthRequest.LogoutRequest;
 import com.attandance.backend.dto.request.AuthRequest.RegisterRequest;
@@ -41,10 +42,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthService {
+
     UserRepository userRepository;
-
-    SecurityConfig securityConfig;
-
+    PasswordEncoder passwordEncoder;
     InvalidTokenRepository invalidTokenRepository;
 
     @NonFinal
@@ -100,7 +100,7 @@ public class AuthService {
             throw new AppException(ErrorCode.EMAIL_EXISTED);
         }
 
-        String hashedPassword = securityConfig.passwordEncoder().encode(data.getPassword());
+        String hashedPassword = passwordEncoder.encode(data.getPassword());
 
 
         UserEntity newUser = UserEntity.builder()
@@ -144,7 +144,7 @@ public class AuthService {
 
         if(existingUser == null) throw new AppException((ErrorCode.EMAIL_NOTFOUND));
 
-        boolean authenticated = securityConfig.passwordEncoder().matches(
+        boolean authenticated = passwordEncoder.matches(
             data.getPassword(),
             existingUser.getPassword()
         );
@@ -220,5 +220,68 @@ public class AuthService {
             log.error("Cannot create token", e);
             throw new RuntimeException(e);
         }
+    }
+
+    private JWTClaimsSet getClaims(String token, String secretKey) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            JWSVerifier verifier = new MACVerifier(secretKey.getBytes());
+
+            if (!signedJWT.verify(verifier))
+                throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+            return signedJWT.getJWTClaimsSet();
+        } catch (ParseException | JOSEException e) {
+            log.warn("Failed to parse/verify token: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+    }
+
+    public String extractUsername(String accessToken) {
+        return getClaims(accessToken, SPRING_SECRET_ACCESS_KEY).getSubject();
+    }
+
+    public List<String> extractAuthorities(String accessToken) {
+        try {
+            String scope = getClaims(accessToken, SPRING_SECRET_ACCESS_KEY)
+                    .getStringClaim("scope");
+            if (scope == null || scope.isBlank()) return List.of();
+            return List.of(scope.split(" "));
+        } catch (ParseException e) {
+            return List.of();
+        }
+    }
+
+    public Date extractExpiry(String accessToken) {
+        return getClaims(accessToken, SPRING_SECRET_ACCESS_KEY).getExpirationTime();
+    }
+
+    public String extractJwtId(String accessToken) {
+        return getClaims(accessToken, SPRING_SECRET_ACCESS_KEY).getJWTID();
+    }
+
+    public boolean isAccessTokenValid(String token) {
+        try {
+            JWTClaimsSet claims = getClaims(token, SPRING_SECRET_ACCESS_KEY);
+            return claims.getExpirationTime() != null
+                    && claims.getExpirationTime().after(new Date());
+        } catch (AppException e) {
+            return false;
+        }
+    }
+
+    public boolean isRefreshTokenValid(String token) {
+        try {
+            JWTClaimsSet claims = getClaims(token, SPRING_SECRET_REFRESH_KEY);
+            return claims.getExpirationTime() != null
+                    && claims.getExpirationTime().after(new Date());
+        } catch (AppException e) {
+            return false;
+        }
+    }
+
+
+    public String extractUsernameFromRefreshToken(String refreshToken) {
+        return getClaims(refreshToken, SPRING_SECRET_REFRESH_KEY).getSubject();
     }
 }

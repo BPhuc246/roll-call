@@ -12,16 +12,22 @@ import com.attandance.backend.dto.request.AuthRequest.LoginRequest;
 import com.attandance.backend.dto.request.AuthRequest.LogoutRequest;
 import com.attandance.backend.dto.request.AuthRequest.RegisterRequest;
 import com.attandance.backend.dto.response.AuthResponse.AuthResponse;
+import com.attandance.backend.dto.response.UserResponse.UserResponse;
 import com.attandance.backend.service.AuthService;
+import com.attandance.backend.service.UserService;
 import com.nimbusds.jose.JOSEException;
 
 import lombok.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 @RestController
 @RequestMapping("/auth")
@@ -30,6 +36,7 @@ import lombok.experimental.NonFinal;
 public class AuthController {
 
     AuthService authService;
+    UserService userService;
 
     @NonFinal
     @Value("${jwt.cookieRefresh}")
@@ -43,7 +50,7 @@ public class AuthController {
         Cookie refreshCookie = new Cookie("refresh_token", result.getRefreshToken());
         refreshCookie.setHttpOnly(true);
         refreshCookie.setSecure(false);  // ← false for local, true for production
-        refreshCookie.setPath("/auth");  
+        refreshCookie.setPath("/");  
         refreshCookie.setMaxAge(COOKIE_REFRESH);
         response.addCookie(refreshCookie);
 
@@ -55,6 +62,16 @@ public class AuthController {
         response.addCookie(accessCookie);
     }
 
+    @GetMapping("/me")
+    ApiResponse<UserResponse> fetchUser(Authentication authentication) {
+        String username = authentication.getName();
+
+        var result = this.userService.getUsers(username);
+
+        return ApiResponse.<UserResponse>builder()
+                .result(result)
+                .build();
+    }
 
     @PostMapping("/register")
     ApiResponse<AuthResponse> register(@RequestBody RegisterRequest data, HttpServletResponse response) {
@@ -89,7 +106,7 @@ public class AuthController {
         Cookie refreshCookie = new Cookie("refresh_token", null);
         refreshCookie.setHttpOnly(true);
         refreshCookie.setSecure(false);
-        refreshCookie.setPath("/auth");
+        refreshCookie.setPath("/");
         refreshCookie.setMaxAge(0);
         response.addCookie(refreshCookie);
 
