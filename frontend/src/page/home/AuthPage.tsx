@@ -1,11 +1,17 @@
 import { Eye, EyeClosed, Key, Mail, User } from "lucide-react";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { login, register } from "../../feature/AuthThunk";
+import type { AppDispatch } from "../../store";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(false);
 
   return (
-    <div className="flex flex-col border border-gray-400 rounded-xl bg-blue-950/20" id="auth">
+    <div
+      className="flex flex-col border border-gray-400 rounded-xl bg-blue-950/20"
+      id="auth"
+    >
       <div className="flex justify-between w-full text-sm hover:cursor-pointer border-b border-b-gray-700">
         <button
           className={`${isLogin ? "bg-blue-950/50 font-bold p-2 text-blue-300 border-b-2 border-b-blue-500" : "text-gray-400"} w-1/2 rounded-tl-xl`}
@@ -39,13 +45,26 @@ export default AuthPage;
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
 
+  const dispatch = useDispatch<AppDispatch>();
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const submitHandling = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormData({ email: "", password: "" });
+    await dispatch(login(formData));
+  };
+
   return (
     <div className="flex flex-col gap-2">
       <h1 className="text-xl font-bold">Welcome Back!</h1>
       <p className="text-gray-400 mb-5">
         Access your role-based academic dashboard and verify checks.
       </p>
-      <form className="flex flex-col gap-5">
+      <form className="flex flex-col gap-5" onSubmit={submitHandling}>
         <div className="flex flex-col gap-2">
           <label className="text-gray-500 font-semibold">
             Email address <span className="text-red-500">*</span>
@@ -56,6 +75,9 @@ const LoginPage = () => {
               type="email"
               className="w-full bg-black border border-gray-400 rounded-md p-2 indent-8 text-gray-400 focus:outline-none focus:border-blue-300"
               placeholder="abcd@gmail.com"
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
             />
           </div>
         </div>
@@ -69,6 +91,9 @@ const LoginPage = () => {
               type={showPassword ? "text" : "password"}
               className="w-full bg-black border border-gray-400 rounded-md p-2 indent-8 text-gray-400 focus:outline-none focus:border-blue-300"
               placeholder="*********"
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
             />
             <div
               className="absolute top-2 right-2 text-gray-300"
@@ -89,13 +114,27 @@ const LoginPage = () => {
 const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
 
+  const dispatch = useDispatch<AppDispatch>();
+
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+
+  const submitHandling = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormData({ username: "", email: "", password: "" });
+    await dispatch(register(formData));
+  };
+
   return (
     <div className="flex flex-col gap-2">
       <h1 className="text-xl font-bold">Register Institutional Profile</h1>
       <p className="text-gray-400 mb-5">
         Create a new sandbox character and customize authorization capabilities.
       </p>
-      <form className="flex flex-col gap-5">
+      <form className="flex flex-col gap-5" onSubmit={submitHandling}>
         <div className="flex flex-col gap-2">
           <label className="text-gray-500 font-semibold">
             Username <span className="text-red-500">*</span>
@@ -106,6 +145,9 @@ const RegisterPage = () => {
               type="text"
               className="w-full bg-black border border-gray-400 rounded-md p-2 indent-8 text-gray-400 focus:outline-none focus:border-blue-300"
               placeholder="e.g: baophuc"
+              onChange={(e) =>
+                setFormData({ ...formData, username: e.target.value })
+              }
             />
           </div>
         </div>
@@ -119,6 +161,9 @@ const RegisterPage = () => {
               type="email"
               className="w-full bg-black border border-gray-400 rounded-md p-2 indent-8 text-gray-400 focus:outline-none focus:border-blue-300"
               placeholder="abcd@gmail.com"
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
             />
           </div>
         </div>
@@ -132,6 +177,9 @@ const RegisterPage = () => {
               type={showPassword ? "text" : "password"}
               className="w-full bg-black border border-gray-400 rounded-md p-2 indent-8 text-gray-400 focus:outline-none focus:border-blue-300"
               placeholder="*********"
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
             />
             <div
               className="absolute top-2 right-2 text-gray-300"
@@ -141,7 +189,10 @@ const RegisterPage = () => {
             </div>
           </div>
         </div>
-        <button className="w-full bg-blue-700 p-3 font-semibold rounded-md hover:cursor-pointer">
+        <button
+          type="submit"
+          className="w-full bg-blue-700 p-3 font-semibold rounded-md hover:cursor-pointer"
+        >
           Register new account
         </button>
       </form>
