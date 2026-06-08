@@ -201,7 +201,8 @@ public class AuthService {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-            .subject(userEntity.getUsername())
+            .subject(userEntity.getEmail())
+            .claim("email", userEntity.getEmail())
             .issuer("roll-call.com")
             .issueTime(new Date())
             .expirationTime(new Date(

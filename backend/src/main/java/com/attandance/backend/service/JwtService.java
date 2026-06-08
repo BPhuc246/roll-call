@@ -36,6 +36,10 @@ public class JwtService {
         return getClaim(token, "jti");
     }
 
+    public String extractEmail(String token) {
+        return getClaim(token, "email"); // ← use getClaim, not extractClaim
+    }
+
     public List<String> extractAuthorities(String token) {
         try {                                                      
             SignedJWT jwt = getSignedJWT(token);
@@ -50,7 +54,7 @@ public class JwtService {
         SignedJWT jwt = SignedJWT.parse(token);
         JWSVerifier verifier = new MACVerifier(SECRET_ACCESS_KEY.getBytes());
         if (!jwt.verify(verifier)) throw new RuntimeException("Invalid signature");
-        if (new Date().after(jwt.getJWTClaimsSet().getExpirationTime()))  // ✅ Date imported
+        if (new Date().after(jwt.getJWTClaimsSet().getExpirationTime()))  
             throw new RuntimeException("Token expired");
         return jwt;
     }

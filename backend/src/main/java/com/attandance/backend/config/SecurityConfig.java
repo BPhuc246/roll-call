@@ -60,6 +60,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(request ->
                 request
                     .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                    .requestMatchers("/api/qr/**").authenticated()
                     .anyRequest().authenticated())
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwtConfigure -> jwtConfigure.decoder(jwtDecoder()))

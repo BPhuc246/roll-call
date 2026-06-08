@@ -1,13 +1,20 @@
 import {
+  BookOpen,
+  CheckCircle,
   CircleCheck,
   ExternalLink,
   Globe,
   Mail,
   Map,
+  MapPin,
   Phone,
   QrCode,
+  QrCodeIcon,
   Shield,
   ShieldCog,
+  UserCheck,
+  UserRoundCogIcon,
+  Wifi,
 } from "lucide-react";
 import user from "../assets/user.jpg";
 import user2 from "../assets/user2.jpg";
@@ -118,5 +125,55 @@ export const Support = [
   {
     icon: Globe,
     info: "HCM City",
+  },
+];
+
+export const NavbarAdminSelect = [
+  {
+    icon: QrCodeIcon,
+    name: "Broadcast QR",
+    link: "/broadcast_qr",
+  },
+  {
+    icon: BookOpen,
+    name: "Past Attandace",
+    link: "/past_attandance",
+  },
+  {
+    icon: UserRoundCogIcon,
+    name: "Roster Directory (RBAC)",
+    link: "/roster_directory",
+  },
+  {
+    icon: UserCheck,
+    name: "Attandance Check-In",
+    link: "/attandance_checkin",
+  },
+];
+
+export const LocationFilterMethod = [
+  {
+    icon: CheckCircle,
+    name: "None",
+    color: "text-gray-500",
+    type: "",
+  },
+  {
+    icon: MapPin,
+    name: "GPS Coordinates",
+    color: "text-blue-500",
+    type: "GPS",
+  },
+  {
+    icon: Wifi,
+    name: "Wifi SSID",
+    color: "text-purple-500",
+    type: "wifi",
+  },
+  {
+    icon: Globe,
+    name: "Allow IP Sub",
+    color: "text-orange-500",
+    type: "IpAddress",
   },
 ];
