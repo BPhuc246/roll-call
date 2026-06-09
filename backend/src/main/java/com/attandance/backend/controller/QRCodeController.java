@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.attandance.backend.dto.ApiResponse;
 import com.attandance.backend.dto.request.QrRequest.QrInputRequest;
+import com.attandance.backend.dto.request.QrRequest.QrScanRequest;
+import com.attandance.backend.dto.response.QrResponse.QRRecordResponse;
 import com.attandance.backend.entity.QRCode.QRCodeEntity;
 import com.attandance.backend.entity.User.UserEntity;
 import com.attandance.backend.repository.UserRepository;
@@ -19,10 +21,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import javax.imageio.ImageIO;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.util.List;
@@ -50,15 +50,9 @@ public class QRCodeController {
 
     @PostMapping(value = "/create", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> createQr(@RequestBody QrInputRequest qrInputRequest, @AuthenticationPrincipal String email) throws Exception {
-        // String email = auth.getName(); // email
+        UserEntity currentUser = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
-        UserEntity currentUser = userRepository.findByEmail(email);    
-
-        if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        BufferedImage image = qrCodeService.createQrCode(qrInputRequest, currentUser);
+        BufferedImage image = qrCodeService.createQrCode(qrInputRequest, currentUser.getId());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(image, "png", baos);
@@ -68,6 +62,9 @@ public class QRCodeController {
                 .body(baos.toByteArray());
     }
         
-        
-
+    @PostMapping("/scan")
+    public ApiResponse<QRRecordResponse> scanQr(@RequestParam String token, @RequestBody QrScanRequest qrScanRequest, @AuthenticationPrincipal String email) {
+        var result = qrCodeService.scanQr(token, qrScanRequest, email);
+        return ApiResponse.<QRRecordResponse>builder().result(result).build();
+    }
 }

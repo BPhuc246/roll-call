@@ -11,7 +11,7 @@ import com.attandance.backend.entity.User.UserEntity;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
-    UserEntity findByEmail(String email);
+    Optional<UserEntity> findByEmail(String email);
     Boolean existsByUsername(String username);
     Boolean existsByEmail(String email);
     

@@ -140,7 +140,8 @@ public class AuthService {
             data.getPassword().length() < 6
         ) throw new RuntimeException("Password must be at least 6 characters");
 
-        var existingUser = this.userRepository.findByEmail(data.getEmail());    
+        UserEntity existingUser = userRepository.findByEmail(data.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
+  
 
         if(existingUser == null) throw new AppException((ErrorCode.EMAIL_NOTFOUND));
 
