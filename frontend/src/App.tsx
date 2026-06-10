@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import type { AppDispatch } from "./store";
 import { fetch } from "./feature/AuthThunk";
 import BroadCastQR from "./page/General/BroadCastQR";
+import PastAttandance from "./page/General/PastAttandance";
 
 const App = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -19,6 +20,7 @@ const App = () => {
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/broadcast_qr" element={<BroadCastQR />} />
+        <Route path="/past_attandance" element={<PastAttandance />} />
       </Route>
     </Routes>
   );

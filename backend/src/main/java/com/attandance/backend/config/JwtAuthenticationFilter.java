@@ -39,7 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             boolean isInvalidated = invalidTokenRepository.existsById(jwtId);
 
             if (!isInvalidated) {
-                String email = jwtService.extractEmail(token); // ← changed from extractUsername
+                String email = jwtService.extractEmail(token); 
                 List<String> roles = jwtService.extractAuthorities(token);
 
                 List<SimpleGrantedAuthority> authorities = roles.stream()

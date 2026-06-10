@@ -141,7 +141,6 @@ public class AuthService {
         ) throw new RuntimeException("Password must be at least 6 characters");
 
         UserEntity existingUser = userRepository.findByEmail(data.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
-  
 
         if(existingUser == null) throw new AppException((ErrorCode.EMAIL_NOTFOUND));
 

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.attandance.backend.dto.ApiResponse;
 import com.attandance.backend.dto.request.AuthRequest.LoginRequest;
@@ -19,6 +20,7 @@ import com.nimbusds.jose.JOSEException;
 
 import lombok.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 
 import jakarta.servlet.http.Cookie;
@@ -64,13 +66,12 @@ public class AuthController {
 
     @GetMapping("/me")
     ApiResponse<UserResponse> fetchUser(Authentication authentication) {
-        String username = authentication.getName();
-
-        var result = this.userService.getUsers(username);
-
-        return ApiResponse.<UserResponse>builder()
-                .result(result)
-                .build();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+        String email = authentication.getName();
+        var result = this.userService.getUsers(email);
+        return ApiResponse.<UserResponse>builder().result(result).build();
     }
 
     @PostMapping("/register")

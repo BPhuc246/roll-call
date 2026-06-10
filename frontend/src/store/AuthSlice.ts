@@ -8,7 +8,7 @@ const authInitialState: AuthInitialState = {
 };
 
 export const AuthSlice = createSlice({
-  name: "counter",
+  name: "auth",
   initialState: authInitialState,
   reducers: {},
   extraReducers(builder) {
@@ -18,7 +18,7 @@ export const AuthSlice = createSlice({
         state.status = "pending";
       })
       .addCase(fetch.fulfilled, (state, action) => {
-        state.status = "pending";
+        state.status = "succeeded";
         state.user = action.payload;
       })
       .addCase(fetch.rejected, (state) => {

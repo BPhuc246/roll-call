@@ -20,8 +20,8 @@ public class UserService {
 
     UserRepository userRepository;
 
-    public UserResponse getUsers(String username) {
-        return this.userRepository.findByUsername(username)
+    public UserResponse getUsers(String email) {
+        return this.userRepository.findByEmail(email)
             .map(user -> UserResponse.builder()
                     .id(user.getId())
                     .username(user.getUsername())
