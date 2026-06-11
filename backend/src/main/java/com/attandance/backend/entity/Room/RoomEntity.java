@@ -1,21 +1,23 @@
-package com.attandance.backend.entity.QRCode;
+package com.attandance.backend.entity.Room;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.attandance.backend.entity.QRCode.QRCodeEntity;
 import com.attandance.backend.entity.User.UserEntity;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -31,34 +33,44 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "qr_records")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class QRRecord {
+@Table(name = "rooms")
+public class RoomEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "qr_id", nullable = false)
-    @JsonIgnore
-    QRCodeEntity qrCode;
+    @Column(nullable = false, length = 30)
+    String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    @JsonIgnore
-    UserEntity member;
+    List<String> allowMembersEmail;
 
-    @Column(nullable = false)
-    @Builder.Default
-    Integer amountCheckIn = 1;
+    @OneToMany(
+        mappedBy = "room",
+        cascade = CascadeType.ALL,
+        orphanRemoval = false
+    )
+    List<RoomMember> members;
 
-    @CreationTimestamp
-    LocalDateTime checkInTime;
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    UserEntity owner;
+
+    @OneToMany(
+        mappedBy = "room",
+        cascade = CascadeType.ALL,
+        orphanRemoval = false
+    )
+    List<QRCodeEntity> qrCodes;
 
     @CreationTimestamp
     LocalDateTime createdAt;
 
     @UpdateTimestamp
     LocalDateTime updatedAt;
+
+    @Column(nullable = false)
+    @Builder.Default
+    Boolean isDeleted = false;
 }

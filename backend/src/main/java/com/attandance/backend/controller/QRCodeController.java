@@ -7,10 +7,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.attandance.backend.dto.ApiResponse;
 import com.attandance.backend.dto.request.QrRequest.QrInputRequest;
 import com.attandance.backend.dto.request.QrRequest.QrScanRequest;
+import com.attandance.backend.dto.response.QrResponse.GetAllQRCodeResponse;
 import com.attandance.backend.dto.response.QrResponse.QRRecordResponse;
-import com.attandance.backend.entity.QRCode.QRCodeEntity;
-import com.attandance.backend.entity.User.UserEntity;
-import com.attandance.backend.repository.UserRepository;
 import com.attandance.backend.service.QRCodeService;
 
 import lombok.AccessLevel;
@@ -23,6 +21,7 @@ import javax.imageio.ImageIO;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.util.List;
@@ -40,19 +39,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class QRCodeController {
 
     QRCodeService qrCodeService;
-    UserRepository userRepository;
 
     @GetMapping
-    public ApiResponse<List<QRCodeEntity>> getQrCodes(@RequestParam(required = false) String createdDay) {
+    public ApiResponse<List<GetAllQRCodeResponse>> getQrCodes(@RequestParam(required = false) String createdDay) {
         var result = qrCodeService.getQrCodes(createdDay);
-        return ApiResponse.<List<QRCodeEntity>>builder().result(result).build();
+        return ApiResponse.<List<GetAllQRCodeResponse>>builder().result(result).build();
     }
 
     @PostMapping(value = "/create", produces = MediaType.IMAGE_PNG_VALUE)
-    public ResponseEntity<byte[]> createQr(@RequestBody QrInputRequest qrInputRequest, @AuthenticationPrincipal String email) throws Exception {
-        UserEntity currentUser = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
-
-        BufferedImage image = qrCodeService.createQrCode(qrInputRequest, currentUser.getId());
+    public ResponseEntity<byte[]> createQr(@RequestBody QrInputRequest qrInputRequest, Authentication authentication) throws Exception {
+        String email = authentication.getName(); 
+        BufferedImage image = qrCodeService.createQrCode(qrInputRequest, email);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(image, "png", baos);

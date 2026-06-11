@@ -2,6 +2,7 @@ import {
   BookOpen,
   CheckCircle,
   CircleCheck,
+  DoorOpen,
   ExternalLink,
   Globe,
   Mail,
@@ -148,6 +149,11 @@ export const NavbarAdminSelect = [
     icon: UserCheck,
     name: "Attandance Check-In",
     link: "/attandance_checkin",
+  },
+  {
+    icon: DoorOpen,
+    name: "Room Management",
+    link: "/room",
   },
 ];
 

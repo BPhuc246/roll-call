@@ -7,6 +7,7 @@ import type { AppDispatch } from "./store";
 import { fetch } from "./feature/AuthThunk";
 import BroadCastQR from "./page/General/BroadCastQR";
 import PastAttandance from "./page/General/PastAttandance";
+import RoomManagement from "./page/General/RoomManagement";
 
 const App = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/broadcast_qr" element={<BroadCastQR />} />
         <Route path="/past_attandance" element={<PastAttandance />} />
+        <Route path="/room" element={<RoomManagement />} />
       </Route>
     </Routes>
   );

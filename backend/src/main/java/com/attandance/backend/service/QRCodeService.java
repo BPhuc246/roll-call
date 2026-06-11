@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.attandance.backend.dto.request.QrRequest.QrInputRequest;
 import com.attandance.backend.dto.request.QrRequest.QrScanRequest;
+import com.attandance.backend.dto.response.QrResponse.GetAllQRCodeResponse;
 import com.attandance.backend.dto.response.QrResponse.QRRecordResponse;
 import com.attandance.backend.entity.QRCode.QRCodeEntity;
 import com.attandance.backend.entity.QRCode.QRCodeEnumStatus;
@@ -51,30 +52,40 @@ public class QRCodeService {
     final GeneratorFunction generatorFunction;
     final QRCodeMapper qrCodeMapper;
 
-    public List<QRCodeEntity> getQrCodes(String createdDay) {
+    public List<GetAllQRCodeResponse> getQrCodes(String createdDay) {
+        List<QRCodeEntity> qrCodeEntity;
         if (createdDay == null || createdDay.isBlank()) {
-            return qrRepository.findAll();
-        }
-        LocalDateTime now = LocalDateTime.now();
-        return switch (createdDay.toLowerCase()) {
+            qrCodeEntity = qrRepository.findAll();
+        } else {
+            LocalDateTime now = LocalDateTime.now();
+            switch (createdDay.toLowerCase()) {
             case "day" ->
-                qrRepository.findByCreatedAtAfter(
+                qrCodeEntity = qrRepository.findByCreatedAtAfter(
                     now.minusDays(1));
 
             case "week" ->
-                qrRepository.findByCreatedAtAfter(
+                qrCodeEntity = qrRepository.findByCreatedAtAfter(
                     now.minusWeeks(1));
 
             case "month" ->
-                qrRepository.findByCreatedAtAfter(
+                qrCodeEntity = qrRepository.findByCreatedAtAfter(
                     now.minusMonths(1));
 
             default ->
-                qrRepository.findAll();
-        };
+                qrCodeEntity = qrRepository.findAll();            
+            };
+        }
+
+        return qrCodeEntity.stream()
+            .map(qr -> qrCodeMapper.toGetAllQRCodeResponse(qr))
+            .toList();
     }
 
-    public BufferedImage createQrCode(QrInputRequest qrInputRequest, Long creatorId) throws WriterException {
+    public BufferedImage createQrCode(QrInputRequest qrInputRequest, String email) throws WriterException {
+
+
+
+        UserEntity currentUser = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
         int maxRetries = 5;
         for (int attempt = 0; attempt < maxRetries; attempt++) {
@@ -84,7 +95,7 @@ public class QRCodeService {
 
                 QRCodeEntity newQrCode = QRCodeEntity.builder()
                     .title(qrInputRequest.getTitle())
-                    .creatorId(creatorId)
+                    .createdBy(currentUser)
                     .code(code)
                     .token(token)
                     .startTime(qrInputRequest.getStartTime())
@@ -161,6 +172,7 @@ public class QRCodeService {
 
         UserEntity user = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
+        
 
         QRRecord records = qrRecordRepository.findByQrCodeAndMember(qrCode, user)
             .map(existing -> {

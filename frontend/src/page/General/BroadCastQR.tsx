@@ -1,7 +1,18 @@
 import { Play, SlidersVertical } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { LocationFilterMethod } from "../../types/SampleDetails";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../../store";
+import { createQrCode } from "../../feature/QRThunk";
+import { calculateEndTime, type Duration } from "../../utils/ConvertFunction";
+import toast from "react-hot-toast";
 
+interface FormData {
+  title: string;
+  startTime: string;
+  duration: Duration;
+  locationMethod: string;
+}
 interface VerifyQRCodeProps {
   data: {
     title: string;
@@ -18,22 +29,7 @@ interface VerifyQRCodeProps {
 const BroadCastQR = () => {
   const [openVerify, setOpenVerify] = useState(false);
 
-  const verifyRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const toggleOpen = (event: MouseEvent) => {
-      if (
-        verifyRef.current &&
-        !verifyRef.current.contains(event.target as Node)
-      ) {
-        setOpenVerify(false);
-      }
-    };
-    document.addEventListener("mousedown", toggleOpen);
-    return () => document.removeEventListener("mousedown", toggleOpen);
-  }, []);
-
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     title: "",
     startTime: "",
     duration: {
@@ -46,9 +42,7 @@ const BroadCastQR = () => {
   return (
     <div className="w-full min-h-screen bg-slate-900 text-xs text-white p-3 relative">
       {openVerify && (
-        <div className="absolute" ref={verifyRef}>
-          <VerifyQRCode data={formData} onClose={() => setOpenVerify(false)} />
-        </div>
+        <VerifyQRCode data={formData} onClose={() => setOpenVerify(false)} />
       )}
       <div className="flex flex-col gap-1">
         <h1 className="text-xl font-bold">QR Roll Call Broadcaster</h1>
@@ -116,7 +110,7 @@ const BroadCastQR = () => {
                         ...formData,
                         duration: {
                           ...formData.duration,
-                          time: e.target.value,
+                          time: e.target.value as Duration["time"],
                         },
                       })
                     }
@@ -134,7 +128,7 @@ const BroadCastQR = () => {
                         ...formData,
                         duration: {
                           ...formData.duration,
-                          type: e.target.value,
+                          type: e.target.value as Duration["type"],
                         },
                       })
                     }
@@ -146,12 +140,12 @@ const BroadCastQR = () => {
                 </div>
               </div>
             </div>
-            <p className="flex gap-1">
+            <div className="flex gap-1">
               Expires and self-locks automatically when limits expire.{" "}
               <p className="text-red-400">
                 {formData.duration.time} {formData.duration.type}s
               </p>
-            </p>
+            </div>
           </div>
           <div className="flex flex-col gap-2">
             <label className="text font-semibold uppercase tracking-wider">
@@ -190,8 +184,41 @@ const BroadCastQR = () => {
 export default BroadCastQR;
 
 const VerifyQRCode = ({ data, onClose }: VerifyQRCodeProps) => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleSubmit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    const startTime = data.startTime
+      ? new Date(data.startTime).toISOString().slice(0, 19)
+      : new Date().toISOString().slice(0, 19);
+
+    const endTime = calculateEndTime(
+      data.startTime || new Date().toISOString(),
+      {
+        time: data.duration.time as Duration["time"],
+        type: data.duration.type as Duration["type"],
+      },
+    );
+
+    if (!endTime) {
+      toast.error("Invalid start time");
+      return;
+    }
+
+    dispatch(
+      createQrCode({
+        title: data.title,
+        startTime,
+        endTime: new Date(endTime).toISOString().slice(0, 19),
+        locationMethod: data.locationMethod,
+      }),
+    );
+    onClose();
+  };
+
   return (
-    <form
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 w-full"
       onClick={onClose}
     >
@@ -237,11 +264,14 @@ const VerifyQRCode = ({ data, onClose }: VerifyQRCodeProps) => {
             Cancel
           </button>
 
-          <button className="rounded-md bg-blue-600 px-4 py-2">
+          <button
+            onClick={handleSubmit}
+            className="rounded-md bg-blue-600 px-4 py-2"
+          >
             Confirm & Generate
           </button>
         </div>
       </div>
-    </form>
+    </div>
   );
 };
