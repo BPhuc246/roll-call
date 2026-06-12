@@ -20,7 +20,7 @@ const Navbar = () => {
         <NavbarAdmin />
       ) : (
         <a
-          href="#auth"
+          href="/#auth"
           className="text-sm font-bold bg-slate-700 p-2 rounded-lg h-fit hover:cursor-pointer"
         >
           Sign In / Register

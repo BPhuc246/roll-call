@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../lib/axios";
-import type { RoomInfo } from "../types/RoomInterface";
+import type { RoomInfo, RoomInputRequest } from "../types/RoomInterface";
 
 export const getAllRooms = createAsyncThunk<RoomInfo[], void>(
   "room/getAllRooms",
@@ -31,11 +31,11 @@ export const getRoomDetails = createAsyncThunk<RoomInfo, number>(
   },
 );
 
-export const createRoom = createAsyncThunk<RoomInfo, string>(
+export const createRoom = createAsyncThunk<RoomInfo, RoomInputRequest>(
   "room/createRoom",
-  async (name, { rejectWithValue }) => {
+  async (data, { rejectWithValue }) => {
     try {
-      const res = await axiosInstance.post("/room/create", name);
+      const res = await axiosInstance.post("/room/create", data);
       return res.data.result;
     } catch (error: any) {
       return rejectWithValue(null);

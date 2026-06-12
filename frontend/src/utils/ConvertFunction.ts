@@ -3,13 +3,11 @@ export interface Duration {
   type: "second" | "minute" | "hour";
 }
 
-
 export function calculateEndTime(
   startTime: string,
-  duration: Duration
+  duration: Duration,
 ): string {
-
-    const date = new Date(startTime);
+  const date = new Date(startTime);
 
   if (Number.isNaN(date.getTime())) {
     console.error("Invalid startTime:", startTime);
@@ -33,4 +31,21 @@ export function calculateEndTime(
   }
 
   return date.toISOString();
+}
+
+export async function convertListToStringArray(
+  e: React.ChangeEvent<HTMLInputElement>,
+): Promise<string[] | null> {
+  const file = e.target.files?.[0];
+
+  if (!file) {
+    return null;
+  }
+
+  const text = await file.text();
+
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
