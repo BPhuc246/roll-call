@@ -285,4 +285,37 @@ public class AuthService {
     public String extractUsernameFromRefreshToken(String refreshToken) {
         return getClaims(refreshToken, SPRING_SECRET_REFRESH_KEY).getSubject();
     }
+
+    public AuthResponse refreshToken(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank())
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        if (!isRefreshTokenValid(refreshToken))
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        String email = extractUsernameFromRefreshToken(refreshToken);
+
+        UserEntity existingUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+
+        var newAccessToken = generateToken(
+            existingUser,
+            SPRING_SECRET_ACCESS_KEY,
+            Long.parseLong(DURATION_TIME_ACCESS),
+            ChronoUnit.valueOf(CHRONO_ACCESS)
+        );
+
+        var newRefreshToken = generateToken(
+            existingUser,
+            SPRING_SECRET_REFRESH_KEY,
+            Long.parseLong(DURATION_TIME_REFRESH),
+            ChronoUnit.valueOf(CHRONO_REFRESH)
+        );
+
+        return AuthResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .authenticated(true)
+                .build();
+    }
 }

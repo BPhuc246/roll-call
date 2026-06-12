@@ -120,4 +120,26 @@ public class AuthController {
 
         return ApiResponse.<AuthResponse>builder().result(AuthResponse.builder().authenticated(false).build()).build();
     }
+
+    @PostMapping("/refresh")
+    ApiResponse<AuthResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals("refresh_token")) {
+                    refreshToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (refreshToken == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+
+        var result = this.authService.refreshToken(refreshToken);
+        setAuthCookies(response, result);
+
+        return ApiResponse.<AuthResponse>builder().result(result).build();
+    }
 }

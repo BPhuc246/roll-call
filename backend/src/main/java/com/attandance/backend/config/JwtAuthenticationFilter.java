@@ -32,25 +32,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String token = extractTokenFromCookie(request);
+        try {
+            String token = extractTokenFromCookie(request);
 
-        if (token != null && jwtService.isAccessTokenValid(token)) {
-            String jwtId = jwtService.extractJwtId(token);
-            boolean isInvalidated = invalidTokenRepository.existsById(jwtId);
+            if (token != null && jwtService.isAccessTokenValid(token)) {
+                String jwtId = jwtService.extractJwtId(token);
+                boolean isInvalidated = invalidTokenRepository.existsById(jwtId);
 
-            if (!isInvalidated) {
-                String email = jwtService.extractEmail(token); 
-                List<String> roles = jwtService.extractAuthorities(token);
+                if (!isInvalidated) {
+                    String email = jwtService.extractEmail(token);
+                    List<String> roles = jwtService.extractAuthorities(token);
 
-                List<SimpleGrantedAuthority> authorities = roles.stream()
-                        .map(SimpleGrantedAuthority::new)
-                        .toList();
+                    List<SimpleGrantedAuthority> authorities = roles.stream()
+                            .map(SimpleGrantedAuthority::new)
+                            .toList();
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(email, null, authorities);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(email, null, authorities);
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
+        } catch (Exception e) {
+            SecurityContextHolder.clearContext();
+            logger.warn("JWT processing failed: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);
