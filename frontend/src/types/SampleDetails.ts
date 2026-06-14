@@ -7,7 +7,6 @@ import {
   Globe,
   Mail,
   Map,
-  MapPin,
   Phone,
   QrCode,
   QrCodeIcon,
@@ -160,26 +159,14 @@ export const NavbarAdminSelect = [
 export const LocationFilterMethod = [
   {
     icon: CheckCircle,
-    name: "None",
+    name: "NONE",
     color: "text-gray-500",
     type: "",
   },
   {
-    icon: MapPin,
-    name: "GPS Coordinates",
-    color: "text-blue-500",
-    type: "GPS",
-  },
-  {
     icon: Wifi,
-    name: "Wifi SSID",
+    name: "IP_ADDRESS",
     color: "text-purple-500",
     type: "wifi",
   },
-  {
-    icon: Globe,
-    name: "Allow IP Sub",
-    color: "text-orange-500",
-    type: "IpAddress",
-  },
-];
+] as const;

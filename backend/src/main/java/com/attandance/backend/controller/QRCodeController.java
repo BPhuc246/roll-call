@@ -11,6 +11,7 @@ import com.attandance.backend.dto.response.QrResponse.GetAllQRCodeResponse;
 import com.attandance.backend.dto.response.QrResponse.QRRecordResponse;
 import com.attandance.backend.service.QRCodeService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -60,8 +61,9 @@ public class QRCodeController {
     }
         
     @PostMapping("/scan")
-    public ApiResponse<QRRecordResponse> scanQr(@RequestParam String token, @RequestBody QrScanRequest qrScanRequest, @AuthenticationPrincipal String email) {
-        var result = qrCodeService.scanQr(token, qrScanRequest, email);
+    public ApiResponse<QRRecordResponse> scanQr(@RequestParam String token, @RequestBody QrScanRequest qrScanRequest, @AuthenticationPrincipal String email, HttpServletRequest httpRequest) {
+        String ipAddress = httpRequest.getRemoteAddr();
+        var result = qrCodeService.scanQr(token, qrScanRequest, email, ipAddress);
         return ApiResponse.<QRRecordResponse>builder().result(result).build();
     }
 }

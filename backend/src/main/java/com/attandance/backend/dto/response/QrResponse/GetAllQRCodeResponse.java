@@ -2,6 +2,7 @@ package com.attandance.backend.dto.response.QrResponse;
 
 import java.time.LocalDateTime;
 
+import com.attandance.backend.entity.QRCode.QRCodeEnumMethod;
 import com.attandance.backend.entity.QRCode.QRCodeEnumStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -27,6 +28,6 @@ public class GetAllQRCodeResponse {
     String avatar;
     LocalDateTime startTime;
     LocalDateTime endTime;
-    String locationMethod;
+    QRCodeEnumMethod locationMethod;
     QRCodeEnumStatus status;
 }

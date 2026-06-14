@@ -13,6 +13,7 @@ import com.attandance.backend.dto.request.QrRequest.QrScanRequest;
 import com.attandance.backend.dto.response.QrResponse.GetAllQRCodeResponse;
 import com.attandance.backend.dto.response.QrResponse.QRRecordResponse;
 import com.attandance.backend.entity.QRCode.QRCodeEntity;
+import com.attandance.backend.entity.QRCode.QRCodeEnumMethod;
 import com.attandance.backend.entity.QRCode.QRCodeEnumStatus;
 import com.attandance.backend.entity.QRCode.QRRecord;
 import com.attandance.backend.entity.User.UserEntity;
@@ -82,9 +83,6 @@ public class QRCodeService {
     }
 
     public BufferedImage createQrCode(QrInputRequest qrInputRequest, String email) throws WriterException {
-
-
-
         UserEntity currentUser = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
         int maxRetries = 5;
@@ -101,6 +99,7 @@ public class QRCodeService {
                     .startTime(qrInputRequest.getStartTime())
                     .endTime(qrInputRequest.getEndTime())
                     .locationMethod(qrInputRequest.getLocationMethod())
+                    .ipAddress(qrInputRequest.getLocationMethod() == QRCodeEnumMethod.IP_ADDRESS ? qrInputRequest.getIpAddress() : "")
                     .build();
 
                 qrRepository.save(newQrCode);
@@ -133,10 +132,11 @@ public class QRCodeService {
         throw new RuntimeException("Unexpected error during QR code creation");
     }
 
-    void validateQRCode(QRCodeEntity qrCode) {
+    void validateQRCode(QRCodeEntity qrCode, String ipAddress) {
         if (qrCode.getStatus() != QRCodeEnumStatus.ACTIVE) {
             throw new RuntimeException("QR Code is not active");
         }
+        if(qrCode.getIpAddress() != ipAddress) throw new RuntimeException("Invalid ipaddress");
         LocalDateTime now = LocalDateTime.now();
         if (qrCode.getStartTime() != null && now.isBefore(qrCode.getStartTime())) {
             throw new RuntimeException("Session not started yet");
@@ -147,7 +147,7 @@ public class QRCodeService {
     }
 
     @Transactional
-    public QRRecordResponse scanQr(String token, QrScanRequest qrScanRequest, String email) {
+    public QRRecordResponse scanQr(String token, QrScanRequest qrScanRequest, String email, String ipAddress) {
         QRCodeEntity qrCode = qrRepository.findByToken(token)
             .orElseThrow(() -> new RuntimeException("QR Code not found"));
 
@@ -155,12 +155,11 @@ public class QRCodeService {
             throw new RuntimeException("QR Code is not active");
         }
 
-        validateQRCode(qrCode);
+        validateQRCode(qrCode, ipAddress);
 
         if (!qrScanRequest.getCode().isEmpty() && !qrScanRequest.getCode().equals(qrCode.getCode())) {
             throw new RuntimeException("Wrong code");
         }
-
 
         LocalDateTime now = LocalDateTime.now();
         if (qrCode.getStartTime() != null && now.isBefore(qrCode.getStartTime())) {

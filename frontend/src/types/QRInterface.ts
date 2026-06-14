@@ -3,6 +3,7 @@ export interface QRInput {
   startTime: string;
   endTime: string;
   locationMethod: string;
+  ipAddress: string;
 }
 
 export interface QRInfo {

@@ -19,7 +19,6 @@ export const createQrCode = createAsyncThunk<string, QRInput>(
   "qr/createQrCode",
   async (data, { rejectWithValue }) => {
     try {
-      console.log("Sending data:", data);
       const result = await axiosInstance.post("/qr/create", data, {
         responseType: "blob",
       });

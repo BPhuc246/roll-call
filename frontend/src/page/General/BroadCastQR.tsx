@@ -1,5 +1,5 @@
 import { Play, SlidersVertical } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LocationFilterMethod } from "../../types/SampleDetails";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../../store";
@@ -11,7 +11,8 @@ interface FormData {
   title: string;
   startTime: string;
   duration: Duration;
-  locationMethod: string;
+  locationMethod: "NONE" | "IP_ADDRESS";
+  ipAddress: string;
 }
 interface VerifyQRCodeProps {
   data: {
@@ -22,12 +23,14 @@ interface VerifyQRCodeProps {
       type: string;
     };
     locationMethod: string;
+    ipAddress: string;
   };
   onClose: () => void;
 }
 
 const BroadCastQR = () => {
   const [openVerify, setOpenVerify] = useState(false);
+  const [localIp, setLocalIp] = useState("");
 
   const [formData, setFormData] = useState<FormData>({
     title: "",
@@ -36,8 +39,35 @@ const BroadCastQR = () => {
       time: "5",
       type: "minute",
     },
-    locationMethod: "None",
+    locationMethod: "NONE",
+    ipAddress: "",
   });
+
+  useEffect(() => {
+    const getLocalIP = async () => {
+      const ipRegex = /([0-9]{1,3}\.){3}[0-9]{1,3}/;
+
+      const pc = new RTCPeerConnection({
+        iceServers: [],
+      });
+
+      pc.createDataChannel("");
+
+      pc.createOffer().then((offer) => pc.setLocalDescription(offer));
+
+      pc.onicecandidate = (ice) => {
+        if (ice && ice.candidate && ice.candidate.candidate) {
+          const ipMatch = ipRegex.exec(ice.candidate.candidate);
+          if (ipMatch) {
+            setLocalIp(ipMatch[0]);
+            pc.onicecandidate = null;
+          }
+        }
+      };
+    };
+
+    getLocalIP();
+  }, []);
 
   return (
     <div className="w-full min-h-screen bg-slate-900 text-xs text-white p-3 relative">
@@ -116,6 +146,7 @@ const BroadCastQR = () => {
                     }
                   >
                     <option value="1">1</option>
+                    <option value="3">3</option>
                     <option value="5">5</option>
                     <option value="10">10</option>
                     <option value="30">30</option>
@@ -157,7 +188,13 @@ const BroadCastQR = () => {
                   className={`border rounded-md p-2 flex flex-col gap-3 ${formData.locationMethod === item.name && "text-white bg-blue-600"}`}
                   key={item.name}
                   onClick={() =>
-                    setFormData({ ...formData, locationMethod: item.name })
+                    setFormData({
+                      ...formData,
+                      locationMethod: item.name.toUpperCase() as
+                        | "NONE"
+                        | "IP_ADDRESS",
+                      ipAddress: localIp,
+                    })
                   }
                 >
                   <item.icon
@@ -167,6 +204,12 @@ const BroadCastQR = () => {
                 </div>
               ))}
             </div>
+            {formData.locationMethod === "IP_ADDRESS" && (
+              <div className="flex items-center gap-2">
+                <p className="">Your ip address:</p>{" "}
+                <p className="text-green-500">{localIp}</p>
+              </div>
+            )}
           </div>
           <button
             className="flex items-center gap-2 w-full justify-center p-2 mt-5 bg-blue-600/90 rounded-md"
@@ -212,6 +255,7 @@ const VerifyQRCode = ({ data, onClose }: VerifyQRCodeProps) => {
         startTime,
         endTime: new Date(endTime).toISOString().slice(0, 19),
         locationMethod: data.locationMethod,
+        ipAddress: data.ipAddress,
       }),
     );
     onClose();
@@ -253,6 +297,7 @@ const VerifyQRCode = ({ data, onClose }: VerifyQRCodeProps) => {
           <div>
             <p className="text-slate-400">Location Verification</p>
             <p>{data.locationMethod}</p>
+            <p className="text-green-200">[ {data.ipAddress} ]</p>
           </div>
         </div>
 

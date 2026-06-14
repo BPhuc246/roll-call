@@ -53,6 +53,13 @@ public class QRRecord {
     @Builder.Default
     Integer amountCheckIn = 1;
 
+    @Column(length = 100)
+    String ipAddress;
+
+    @Column(nullable = false)
+    @Builder.Default
+    Boolean locationVerified = false;
+
     @CreationTimestamp
     LocalDateTime checkInTime;
 

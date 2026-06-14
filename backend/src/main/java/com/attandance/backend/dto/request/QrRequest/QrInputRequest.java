@@ -2,6 +2,7 @@ package com.attandance.backend.dto.request.QrRequest;
 
 import java.time.LocalDateTime;
 
+import com.attandance.backend.entity.QRCode.QRCodeEnumMethod;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.validation.constraints.NotBlank;
@@ -32,5 +33,7 @@ public class QrInputRequest {
     LocalDateTime endTime;
 
     @NotBlank(message = "LocationMethod is required")
-    String locationMethod;
+    QRCodeEnumMethod locationMethod;
+
+    String ipAddress;
 }

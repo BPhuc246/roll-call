@@ -63,8 +63,13 @@ public class QRCodeEntity {
 
     LocalDateTime endTime;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    String locationMethod;
+    @Builder.Default
+    QRCodeEnumMethod locationMethod = QRCodeEnumMethod.NONE;
+
+    @Column(length = 100)
+    String ipAddress;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

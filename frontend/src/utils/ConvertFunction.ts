@@ -1,5 +1,5 @@
 export interface Duration {
-  time: "1" | "5" | "10" | "30";
+  time: "1" | "3" | "5" | "10" | "30";
   type: "second" | "minute" | "hour";
 }
 
