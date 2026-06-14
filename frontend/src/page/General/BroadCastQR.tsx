@@ -6,6 +6,7 @@ import type { AppDispatch } from "../../store";
 import { createQrCode } from "../../feature/QRThunk";
 import { calculateEndTime, type Duration } from "../../utils/ConvertFunction";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 interface FormData {
   title: string;
@@ -228,8 +229,9 @@ export default BroadCastQR;
 
 const VerifyQRCode = ({ data, onClose }: VerifyQRCodeProps) => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.MouseEvent) => {
+  const handleSubmit = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
     const startTime = data.startTime
@@ -249,7 +251,7 @@ const VerifyQRCode = ({ data, onClose }: VerifyQRCodeProps) => {
       return;
     }
 
-    dispatch(
+    const qr = await dispatch(
       createQrCode({
         title: data.title,
         startTime,
@@ -257,7 +259,8 @@ const VerifyQRCode = ({ data, onClose }: VerifyQRCodeProps) => {
         locationMethod: data.locationMethod,
         ipAddress: data.ipAddress,
       }),
-    );
+    ).unwrap();
+    navigate(`/qr/scan?token=${qr.token}`);
     onClose();
   };
 

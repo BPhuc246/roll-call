@@ -6,6 +6,20 @@ export interface QRInput {
   ipAddress: string;
 }
 
+export interface QRRecordResponse {
+  id: number;
+  qrCodeId: number;
+  memberEmail: string;
+  amountCheckIn: number;
+  createdAt: Date;
+}
+
+export interface QRResponse {
+  id: number;
+  token: string;
+  code: string;
+}
+
 export interface QRInfo {
   id: number;
   title: string;
@@ -22,5 +36,6 @@ export interface QRInfo {
 export interface QRInitialState {
   qrs: QRInfo[] | null;
   status: "idle" | "rejected" | "succeeded" | "pending";
-  currentQr: string | null;
+  currentQr: QRResponse | null;
+  scanStatus: "idle" | "rejected" | "succeeded" | "pending";
 }

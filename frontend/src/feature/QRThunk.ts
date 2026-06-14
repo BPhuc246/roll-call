@@ -1,6 +1,11 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../lib/axios";
-import type { QRInfo, QRInput } from "../types/QRInterface";
+import type {
+  QRInfo,
+  QRInput,
+  QRRecordResponse,
+  QRResponse,
+} from "../types/QRInterface";
 import toast from "react-hot-toast";
 
 export const getAllQrs = createAsyncThunk<QRInfo[], void>(
@@ -15,22 +20,28 @@ export const getAllQrs = createAsyncThunk<QRInfo[], void>(
   },
 );
 
-export const createQrCode = createAsyncThunk<string, QRInput>(
+export const createQrCode = createAsyncThunk<QRResponse, QRInput>(
   "qr/createQrCode",
   async (data, { rejectWithValue }) => {
     try {
-      const result = await axiosInstance.post("/qr/create", data, {
-        responseType: "blob",
-      });
-      const base64 = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(result.data);
-      });
-
+      const res = await axiosInstance.post("/qr/create", data);
       toast.success("Create QR successfully");
-      return base64;
+      return res.data.result;
     } catch (error) {
+      return rejectWithValue(null);
+    }
+  },
+);
+
+export const scanQrCode = createAsyncThunk<QRRecordResponse, string>(
+  "qr/scanQrCode",
+  async (code, { rejectWithValue }) => {
+    try {
+      const res = await axiosInstance.post("/qr/scan", code);
+      toast.success("Scan QR successfully");
+      return res.data.result;
+    } catch (error) {
+      toast.error("Scan QR failed");
       return rejectWithValue(null);
     }
   },

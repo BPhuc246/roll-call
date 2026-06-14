@@ -1,11 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { QRInitialState } from "../types/QRInterface";
-import { createQrCode, getAllQrs } from "../feature/QRThunk";
+import { createQrCode, getAllQrs, scanQrCode } from "../feature/QRThunk";
 
 const qrInitialState: QRInitialState = {
   qrs: null,
   status: "idle",
   currentQr: null,
+  scanStatus: "idle",
 };
 
 export const QRSlice = createSlice({
@@ -27,6 +28,17 @@ export const QRSlice = createSlice({
       });
 
     builder
+      .addCase(scanQrCode.pending, (state) => {
+        state.scanStatus = "pending";
+      })
+      .addCase(scanQrCode.fulfilled, (state) => {
+        state.scanStatus = "succeeded";
+      })
+      .addCase(scanQrCode.rejected, (state) => {
+        state.scanStatus = "rejected";
+      });
+    
+      builder
       .addCase(createQrCode.pending, (state) => {
         state.status = "pending";
       })

@@ -70,10 +70,6 @@ const RoomManagement = () => {
     return <div>Loading...</div>;
   }
 
-  if (!rooms) {
-    return <div>No rooms found</div>;
-  }
-
   return (
     <div className="w-full min-h-screen flex flex-col p-5 text-white">
       <div className="flex flex-col w-full gap-5">
@@ -146,7 +142,7 @@ const RoomManagement = () => {
             Your current room managing
           </p>
           <div className="flex flex-col gap-3">
-            {rooms.map((r) => (
+            {rooms?.map((r) => (
               <div
                 key={r.id}
                 className={`flex border ${currentRoom === r ? "border-blue-600 bg-slate-950/70" : "border-slate-600"} rounded-xl p-3 text-xs text-slate-400 justify-between`}

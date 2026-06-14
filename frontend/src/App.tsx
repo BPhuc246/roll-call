@@ -8,6 +8,8 @@ import { fetch } from "./feature/AuthThunk";
 import BroadCastQR from "./page/General/BroadCastQR";
 import PastAttandance from "./page/General/PastAttandance";
 import RoomManagement from "./page/General/RoomManagement";
+import QrScan from "./page/General/QrScan";
+import CheckCode from "./page/General/CheckCode";
 
 const App = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -23,6 +25,8 @@ const App = () => {
         <Route path="/broadcast_qr" element={<BroadCastQR />} />
         <Route path="/past_attandance" element={<PastAttandance />} />
         <Route path="/room" element={<RoomManagement />} />
+        <Route path="/qr/scan" element={<QrScan />} />
+        <Route path="/qr/check-code" element={<CheckCode />} />
       </Route>
     </Routes>
   );
